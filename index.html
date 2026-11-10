@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Birthday, Muhammad!</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    background: #05070b;
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+}
+
+canvas {
+    display: block;
+    position: fixed;
+    inset: 0;
+}
+
+#intro, #ending {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 24px;
+    background: radial-gradient(ellipse at center, rgba(20,25,38,.88), rgba(3,5,9,.98));
+    transition: opacity 1s ease;
+}
+
+#intro h1, #ending h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(2.3rem, 7vw, 5.8rem);
+    letter-spacing: .12em;
+    margin: 0 0 18px;
+    color: #f6d99a;
+    text-shadow: 0 3px 20px rgba(255,190,90,.22);
+}
+
+#intro p, #ending p {
+    color: #e4e0d8;
+    font-size: clamp(.95rem, 2vw, 1.15rem);
+    max-width: 560px;
+    line-height: 1.8;
+    margin: 0 0 30px;
+}
+
+button {
+    border: 1px solid rgba(255,220,160,.7);
+    background: linear-gradient(135deg, #d6a95f, #9c6b2c);
+    color: #130e08;
+    font-weight: 700;
+    letter-spacing: .12em;
+    padding: 15px 30px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: .25s;
+    font-family: 'DM Sans', sans-serif;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.15);
+}
+
+#ending { display: none; opacity: 0; }
+
+#darkness {
+    position: fixed;
+    inset: 0;
+    z-index: 11;
+    background: #020204;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 2s ease;
+}
+
+#darkness.visible { opacity: 1; }
+
+#continuePrompt {
+    position: fixed;
+    inset: 0;
+    z-index: 12;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 24px;
+    opacity: 0;
+    transition: opacity .8s ease;
+    background: radial-gradient(ellipse at center, rgba(20,18,17,.4), rgba(2,2,4,.2));
+}
+
+#continuePrompt.visible { opacity: 1; }
+
+#continuePrompt h2 {
+    margin: 0 0 16px;
+    color: #f6d99a;
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.8rem, 5vw, 3.5rem);
+    letter-spacing: .12em;
+}
+
+#continuePrompt p {
+    margin: 0 0 28px;
+    color: #e4e0d8;
+    font-size: clamp(.95rem, 2vw, 1.1rem);
+}
+
+#hud {
+    position: fixed;
+    z-index: 5;
+    top: 18px;
+    left: 18px;
+    right: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .8s;
+}
+
+#hud.visible { opacity: 1; }
+
+.hud-title {
+    color: #f3d59b;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: .2em;
+    text-shadow: 0 2px 8px #000;
+}
+
+.controls {
+    display: flex;
+    gap: 8px;
+    pointer-events: auto;
+}
+
+.controls button {
+    padding: 9px 13px;
+    font-size: 11px;
+    letter-spacing: .06em;
+    background: rgba(10,13,19,.78);
+    color: #f3d59b;
+    border-color: rgba(243,213,155,.4);
+}
+
+#progress {
+    position: fixed;
+    z-index: 6;
+    left: 0;
+    bottom: 0;
+    width: 0%;
+    height: 3px;
+    background: #e8bd76;
+    box-shadow: 0 0 12px #e8bd76;
+}
+
+#hint {
+    position: fixed;
+    z-index: 5;
+    bottom: 18px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: rgba(255,255,255,.55);
+    font-size: 10px;
+    letter-spacing: .2em;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .8s;
+}
+
+#hint.visible { opacity: 1; }
+
+#sceneCaption {
+    position: fixed;
+    z-index: 6;
+    left: 0;
+    right: 0;
+    top: 18%;
+    color: #f7e3bb;
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1rem, 2.8vw, 1.6rem);
+    letter-spacing: .16em;
+    text-shadow: 0 2px 14px #000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .8s ease;
+}
+
+#sceneCaption.visible { opacity: 1; }
+
+@media (max-width: 600px) {
+    #hud { top: 12px; left: 12px; right: 12px; }
+    .hud-title { font-size: 9px; }
+    .controls { gap: 5px; }
+    .controls button { padding: 8px 9px; font-size: 9px; }
+    #hint { bottom: 14px; font-size: 9px; letter-spacing: .12em; }
+}
+</style>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.module.js"
+  }
+}
+</script>
+</head>
+
+<body>
+
+<div id="intro">
+    <h1>HAPPY BIRTHDAY</h1>
+    <p>A little journey through memories, moments, and everything that makes this day special.</p>
+    <button id="startButton">BEGIN THE EXPERIENCE</button>
+</div>
+
+<div id="hud">
+    <div class="hud-title">A CELEBRATION FOR MUHAMMAD</div>
+    <div class="controls">
+        <button id="pauseButton">PAUSE</button>
+        <button id="replayButton">REPLAY</button>
+        <button id="soundButton">SOUND: OFF</button>
+    </div>
+</div>
+
+<div id="hint">SCROLL TO TRAVEL · THE CAKE IS AHEAD</div>
+<div id="sceneCaption" aria-live="polite"></div>
+<div id="progress"></div>
+
+<div id="ending">
+    <h1>HAPPY BIRTHDAY</h1>
+    <p>May the year ahead bring you unforgettable memories, new adventures, and countless reasons to smile. Have an incredible day, Muhammad.</p>
+    <button id="againButton">EXPERIENCE AGAIN</button>
+</div>
+
+<div id="darkness" aria-hidden="true"></div>
+<div id="continuePrompt" role="dialog" aria-labelledby="continueTitle" aria-describedby="continueText">
+    <h2 id="continueTitle">NOT FINISHED YET</h2>
+    <p id="continueText">Click “Continue” to continue.</p>
+    <button id="continueButton">CONTINUE</button>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+
+/* -------------------------------------------------------
+   BASIC THREE.JS SETUP
+------------------------------------------------------- */
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x05070b);
+scene.fog = new THREE.FogExp2(0x05070b, 0.009);
+
+const camera = new THREE.PerspectiveCamera(
+    68,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    250
+);
+
+camera.position.set(0, 0, 18);
+
+const renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    alpha: false
+});
+
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+document.body.appendChild(renderer.domElement);
+
+const clock = new THREE.Clock();
+
+scene.add(new THREE.AmbientLight(0x9aa8c0, 0.7));
+
+const mainLight = new THREE.PointLight(0xffd49a, 180, 55);
+mainLight.position.set(0, 3, 10);
+scene.add(mainLight);
+
+/* -------------------------------------------------------
+   MATERIALS
+------------------------------------------------------- */
+
+const gold = new THREE.MeshStandardMaterial({
+    color: 0xc99a52,
+    metalness: 0.78,
+    roughness: 0.28
+});
+
+const darkGold = new THREE.MeshStandardMaterial({
+    color: 0x6e4822,
+    metalness: 0.72,
+    roughness: 0.35
+});
+
+const darkMaterial = new THREE.MeshStandardMaterial({
+    color: 0x101722,
+    metalness: 0.55,
+    roughness: 0.48
+});
+
+const floorMaterial = new THREE.MeshStandardMaterial({
+    color: 0x11151d,
+    metalness: 0.45,
+    roughness: 0.38
+});
+
+/* -------------------------------------------------------
+   CIRCULAR VAULTED CORRIDOR
+------------------------------------------------------- */
+
+const tunnelRadius = 8;
+const tunnelLength = 112;
+
+// A cylinder rotated onto its side creates a circular tunnel.
+const tunnelGeometry = new THREE.CylinderGeometry(
+    tunnelRadius,
+    tunnelRadius,
+    tunnelLength,
+    96,
+    1,
+    true
+);
+
+tunnelGeometry.rotateX(Math.PI / 2);
+
+const tunnel = new THREE.Mesh(
+    tunnelGeometry,
+    new THREE.MeshStandardMaterial({
+        color: 0x18202b,
+        metalness: 0.48,
+        roughness: 0.62,
+        side: THREE.BackSide
+    })
+);
+
+tunnel.position.z = -37;
+scene.add(tunnel);
+
+// Circular ribs along the tunnel.
+for (let z = 17; z >= -91; z -= 5) {
+    const rib = new THREE.Mesh(
+        new THREE.TorusGeometry(7.93, 0.075, 10, 100),
+        gold
+    );
+
+    rib.position.z = z;
+    scene.add(rib);
+
+    const innerRib = new THREE.Mesh(
+        new THREE.TorusGeometry(7.82, 0.025, 8, 100),
+        darkGold
+    );
+
+    innerRib.position.z = z;
+    scene.add(innerRib);
+}
+
+// Floor.
+const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(16, 120),
+    floorMaterial
+);
+
+floor.rotation.x = -Math.PI / 2;
+floor.position.set(0, -7.85, -37);
+scene.add(floor);
+
+// Floor centre lines.
+for (const x of [-2.4, 2.4]) {
+    const line = new THREE.Mesh(
+        new THREE.BoxGeometry(0.035, 0.025, 110),
+        gold
+    );
+
+    line.position.set(x, -7.8, -37);
+    scene.add(line);
+}
+
+// Decorative lights along the tunnel.
+const tunnelLights = [];
+
+for (let z = 15; z >= -90; z -= 10) {
+    for (const x of [-6.5, 6.5]) {
+        const light = new THREE.PointLight(0xffc779, 35, 14);
+        light.position.set(x, 2.8, z);
+        scene.add(light);
+        tunnelLights.push(light);
+
+        const bulb = new THREE.Mesh(
+            new THREE.SphereGeometry(0.16, 16, 16),
+            new THREE.MeshBasicMaterial({ color: 0xffd89b })
+        );
+
+        bulb.position.copy(light.position);
+        scene.add(bulb);
+    }
+}
+
+/* -------------------------------------------------------
+   TEXTURE HELPERS
+------------------------------------------------------- */
+
+function makeTextTexture(title, subtitle = '') {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1400;
+    canvas.height = 600;
+
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#101722';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Subtle border.
+    ctx.strokeStyle = '#c99a52';
+    ctx.lineWidth = 7;
+    ctx.strokeRect(24, 24, canvas.width - 48, canvas.height - 48);
+
+    ctx.strokeStyle = 'rgba(201,154,82,.35)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(43, 43, canvas.width - 86, canvas.height - 86);
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    ctx.fillStyle = '#f4d59e';
+    ctx.font = '600 82px Georgia';
+    ctx.shadowColor = 'rgba(0,0,0,.8)';
+    ctx.shadowBlur = 12;
+    ctx.fillText(title, 700, subtitle ? 245 : 300, 1220);
+
+    if (subtitle) {
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#e6e0d5';
+        ctx.font = '500 36px Arial';
+        ctx.fillText(subtitle, 700, 365, 1200);
+    }
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    return texture;
+}
+
+function addWallSign(title, subtitle, side, z, width = 6.2, height = 2.7) {
+    const group = new THREE.Group();
+
+    const frame = new THREE.Mesh(
+        new THREE.BoxGeometry(width + 0.22, height + 0.22, 0.18),
+        darkGold
+    );
+
+    group.add(frame);
+
+    const board = new THREE.Mesh(
+        new THREE.PlaneGeometry(width, height),
+        new THREE.MeshBasicMaterial({
+            map: makeTextTexture(title, subtitle)
+        })
+    );
+
+    board.position.z = 0.105;
+    group.add(board);
+
+    group.position.set(side * 7.15, 1.0, z);
+    group.rotation.y = side === -1 ? Math.PI / 2 : -Math.PI / 2;
+
+    scene.add(group);
+    return group;
+}
+
+/* -------------------------------------------------------
+   SIDE WALL MESSAGES
+------------------------------------------------------- */
+
+addWallSign(
+    'A DAY WORTH CELEBRATING',
+    'Some people make ordinary days extraordinary.',
+    -1, 9
+);
+
+addWallSign(
+    'MADE OF GREAT MOMENTS',
+    'The memories are what make the journey special.',
+    1, -10
+);
+
+addWallSign(
+    'KEEP AIMING HIGH',
+    'Big dreams. New adventures. Endless possibilities.',
+    -1, -29
+);
+
+addWallSign(
+    'YOUR NEXT CHAPTER',
+    'May it be your best one yet.',
+    1, -49
+);
+
+addWallSign(
+    'THE WORLD IS YOURS',
+    'Make this year unforgettable.',
+    -1, -69
+);
+
+/* -------------------------------------------------------
+   PHOTO FRAMES
+   Add photo1.jpg to photo8.jpg beside index.html.
+------------------------------------------------------- */
+
+const photoLoader = new THREE.TextureLoader();
+
+function addPhotoFrame(photoNumber, side, z, y = 0.1) {
+    const group = new THREE.Group();
+
+    const frame = new THREE.Mesh(
+        new THREE.BoxGeometry(3.25, 3.55, 0.22),
+        gold
+    );
+
+    group.add(frame);
+
+    const inner = new THREE.Mesh(
+        new THREE.BoxGeometry(3.02, 3.32, 0.12),
+        new THREE.MeshStandardMaterial({
+            color: 0x080a0e,
+            roughness: 0.8
+        })
+    );
+
+    inner.position.z = 0.13;
+    group.add(inner);
+
+    const photoMaterial = new THREE.MeshBasicMaterial({
+        color: 0x333b48
+    });
+
+    const photo = new THREE.Mesh(
+        new THREE.PlaneGeometry(2.82, 3.12),
+        photoMaterial
+    );
+
+    photo.position.z = 0.205;
+    group.add(photo);
+
+    photoLoader.load(
+        `photo${photoNumber}.jpg`,
+        texture => {
+            texture.colorSpace = THREE.SRGBColorSpace;
+            photo.material.map = texture;
+            photo.material.color.set(0xffffff);
+            photo.material.needsUpdate = true;
+        },
+        undefined,
+        () => {
+            // Missing photos simply leave a dark placeholder.
+            console.warn(`Could not load photo${photoNumber}.jpg`);
+        }
+    );
+
+    group.position.set(side * 7.05, y, z);
+    group.rotation.y = side === -1 ? Math.PI / 2 : -Math.PI / 2;
+
+    scene.add(group);
+}
+
+addPhotoFrame(1, -1, 1);
+addPhotoFrame(2, 1, -5);
+addPhotoFrame(3, -1, -16);
+addPhotoFrame(4, 1, -22);
+addPhotoFrame(5, -1, -37);
+addPhotoFrame(6, 1, -43);
+addPhotoFrame(7, -1, -57);
+addPhotoFrame(8, 1, -63);
+
+/* -------------------------------------------------------
+   GIFT BOXES
+------------------------------------------------------- */
+
+const giftMaterials = [
+    new THREE.MeshStandardMaterial({ color: 0x762d3b, roughness: 0.34 }),
+    new THREE.MeshStandardMaterial({ color: 0x183e39, roughness: 0.34 }),
+    new THREE.MeshStandardMaterial({ color: 0x263653, roughness: 0.34 })
+];
+
+const gifts = [];
+
+function addGift(x, z, scale = 1, materialIndex = 0) {
+    const group = new THREE.Group();
+
+    const boxMaterial = giftMaterials[materialIndex];
+
+    const box = new THREE.Mesh(
+        new THREE.BoxGeometry(1.5, 1.25, 1.5),
+        boxMaterial
+    );
+
+    box.position.y = 0.65;
+    group.add(box);
+
+    const lid = new THREE.Mesh(
+        new THREE.BoxGeometry(1.62, 0.22, 1.62),
+        gold
+    );
+
+    lid.position.y = 1.37;
+    group.add(lid);
+
+    const ribbonVertical = new THREE.Mesh(
+        new THREE.BoxGeometry(0.18, 1.35, 1.55),
+        gold
+    );
+
+    ribbonVertical.position.y = 0.68;
+    group.add(ribbonVertical);
+
+    const ribbonHorizontal = new THREE.Mesh(
+        new THREE.BoxGeometry(1.55, 1.35, 0.18),
+        gold
+    );
+
+    ribbonHorizontal.position.y = 0.68;
+    group.add(ribbonHorizontal);
+
+    // Bow.
+    const bowLeft = new THREE.Mesh(
+        new THREE.TorusGeometry(0.22, 0.065, 8, 20, Math.PI),
+        gold
+    );
+
+    bowLeft.position.set(-0.17, 1.55, 0);
+    bowLeft.rotation.z = Math.PI / 3;
+    group.add(bowLeft);
+
+    const bowRight = bowLeft.clone();
+    bowRight.position.x = 0.17;
+    bowRight.rotation.z = -Math.PI / 3;
+    group.add(bowRight);
+
+    group.position.set(x, -7.8, z);
+    group.scale.setScalar(scale);
+    scene.add(group);
+
+    gifts.push({ group, lid });
+}
+
+addGift(-3.5, 12, 1.0, 0);
+addGift(3.5, -4, 0.85, 1);
+addGift(-3.6, -24, 0.9, 2);
+addGift(3.5, -44, 1.0, 0);
+addGift(-3.5, -61, 0.85, 1);
+
+/* -------------------------------------------------------
+   BIRTHDAY CAKE
+------------------------------------------------------- */
+
+const cakeGroup = new THREE.Group();
+
+const cakeBase = new THREE.Mesh(
+    new THREE.CylinderGeometry(2.25, 2.35, 1.35, 64),
+    new THREE.MeshStandardMaterial({
+        color: 0xf0d7c2,
+        roughness: 0.45
+    })
+);
+
+cakeBase.position.y = 0.68;
+cakeGroup.add(cakeBase);
+
+const cakeTop = new THREE.Mesh(
+    new THREE.CylinderGeometry(2.28, 2.28, 0.18, 64),
+    new THREE.MeshStandardMaterial({
+        color: 0xffe5c7,
+        roughness: 0.4
+    })
+);
+
+cakeTop.position.y = 1.39;
+cakeGroup.add(cakeTop);
+
+const cutCakeBase = new THREE.Mesh(
+    new THREE.CylinderGeometry(2.25, 2.35, 1.35, 48, 1, false, Math.PI / 3, Math.PI * 5 / 3),
+    cakeBase.material
+);
+cutCakeBase.position.copy(cakeBase.position);
+cutCakeBase.visible = false;
+cakeGroup.add(cutCakeBase);
+
+const cutCakeTop = new THREE.Mesh(
+    new THREE.CylinderGeometry(2.28, 2.28, 0.18, 48, 1, false, Math.PI / 3, Math.PI * 5 / 3),
+    cakeTop.material
+);
+cutCakeTop.position.copy(cakeTop.position);
+cutCakeTop.visible = false;
+cakeGroup.add(cutCakeTop);
+
+const icing = new THREE.Mesh(
+    new THREE.TorusGeometry(2.18, 0.16, 12, 64),
+    new THREE.MeshStandardMaterial({ color: 0xb75d67 })
+);
+
+icing.rotation.x = Math.PI / 2;
+icing.position.y = 1.2;
+cakeGroup.add(icing);
+
+const sliceGroup = new THREE.Group();
+const cakeSlice = new THREE.Mesh(
+    new THREE.CylinderGeometry(2.25, 2.35, 1.35, 24, 1, false, 0, Math.PI / 3),
+    cakeBase.material
+);
+cakeSlice.position.copy(cakeBase.position);
+sliceGroup.add(cakeSlice);
+
+const cakeSliceTop = new THREE.Mesh(
+    new THREE.CylinderGeometry(2.28, 2.28, 0.18, 24, 1, false, 0, Math.PI / 3),
+    cakeTop.material
+);
+cakeSliceTop.position.copy(cakeTop.position);
+sliceGroup.add(cakeSliceTop);
+
+sliceGroup.visible = false;
+cakeGroup.add(sliceGroup);
+
+const knifeGroup = new THREE.Group();
+const knifeBlade = new THREE.Mesh(
+    new THREE.BoxGeometry(0.13, 2.15, 0.08),
+    new THREE.MeshStandardMaterial({ color: 0xcbd1d7, metalness: 0.8, roughness: 0.2 })
+);
+knifeBlade.position.y = -0.75;
+knifeGroup.add(knifeBlade);
+
+const knifeHandle = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.12, 0.15, 0.8, 12),
+    new THREE.MeshStandardMaterial({ color: 0x68422c, roughness: 0.55 })
+);
+knifeHandle.position.y = 0.72;
+knifeGroup.add(knifeHandle);
+knifeGroup.position.set(1.1, 3.2, 1.5);
+knifeGroup.rotation.z = -0.22;
+knifeGroup.visible = false;
+cakeGroup.add(knifeGroup);
+
+// Candles and flames.
+const flames = [];
+const cakeCandles = [];
+
+for (let i = 0; i < 7; i++) {
+    const angle = (i / 7) * Math.PI * 2;
+    const x = Math.cos(angle) * 1.15;
+    const z = Math.sin(angle) * 1.15;
+
+    const candle = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.075, 0.075, 0.75, 16),
+        new THREE.MeshStandardMaterial({ color: 0xffe7c0 })
+    );
+
+    candle.position.set(x, 1.83, z);
+    cakeGroup.add(candle);
+    cakeCandles.push(candle);
+
+    const flame = new THREE.Mesh(
+        new THREE.SphereGeometry(0.12, 16, 16),
+        new THREE.MeshBasicMaterial({ color: 0xffb43d })
+    );
+
+    flame.scale.set(0.7, 1.5, 0.7);
+    flame.position.set(x, 2.27, z);
+    cakeGroup.add(flame);
+    flames.push(flame);
+}
+
+cakeGroup.position.set(0, -7.8, -82);
+cakeGroup.scale.setScalar(1.8);
+scene.add(cakeGroup);
+
+// Cake spotlight.
+const cakeLight = new THREE.PointLight(0xffb96a, 160, 24);
+cakeLight.position.set(0, -3.2, -82);
+scene.add(cakeLight);
+
+addWallSign(
+    'THIS MOMENT IS YOURS',
+    'Celebrate every little thing that brought you here.',
+    1, -78, 5.5, 2.3
+);
+
+/* -------------------------------------------------------
+   FIREWORKS
+------------------------------------------------------- */
+
+const fireworks = [];
+
+function createFirework(x, y, z) {
+    const colors = [0xffc66e, 0xff6f91, 0x8bd8ff, 0xd7a5ff];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+
+    const particles = new THREE.Group();
+
+    for (let i = 0; i < 45; i++) {
+        const particle = new THREE.Mesh(
+            new THREE.SphereGeometry(0.045, 6, 6),
+            new THREE.MeshBasicMaterial({ color })
+        );
+
+        const direction = new THREE.Vector3(
+            Math.random() * 2 - 1,
+            Math.random() * 2 - 1,
+            Math.random() * 2 - 1
+        ).normalize();
+
+        particle.userData.velocity = direction.multiplyScalar(
+            1.5 + Math.random() * 3
+        );
+
+        particles.add(particle);
+    }
+
+    particles.position.set(x, y, z);
+    scene.add(particles);
+
+    fireworks.push({
+        group: particles,
+        life: 1.6
+    });
+}
+
+/* -------------------------------------------------------
+   CAMERA JOURNEY
+------------------------------------------------------- */
+
+const journeyDuration = 75;
+const cakeTime = 65;
+let elapsed = 0;
+let running = false;
+let soundEnabled = false;
+let audioContext = null;
+let ambientTimer = null;
+let cakeSequence = null;
+let continueTimer = null;
+
+const intro = document.getElementById('intro');
+const ending = document.getElementById('ending');
+const hud = document.getElementById('hud');
+const hint = document.getElementById('hint');
+const progress = document.getElementById('progress');
+const sceneCaption = document.getElementById('sceneCaption');
+const darkness = document.getElementById('darkness');
+const continuePrompt = document.getElementById('continuePrompt');
+
+function smoothStep(t) {
+    return t * t * (3 - 2 * t);
+}
+
+function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+}
+
+function getCameraPosition(time) {
+    // The camera travels down the tunnel.
+    const z = 18 - (time / journeyDuration) * 100;
+
+    // Small cinematic sideways movements.
+    let x = 0;
+    let y = 0;
+
+    if (time > 9 && time < 18) {
+        x = -1.0 * Math.sin((time - 9) / 9 * Math.PI);
+    }
+
+    if (time > 25 && time < 34) {
+        x = 1.0 * Math.sin((time - 25) / 9 * Math.PI);
+    }
+
+    if (time > 43 && time < 52) {
+        x = -0.8 * Math.sin((time - 43) / 9 * Math.PI);
+    }
+
+    if (time > 60) {
+        y = 0.2 * Math.sin(time * 0.7);
+    }
+
+    return new THREE.Vector3(x, y, z);
+}
+
+function getLookTarget(time, position) {
+    const target = position.clone();
+    target.z -= 12;
+
+    // Turn the camera toward the side-wall messages and photos.
+    if (time >= 5 && time < 13) {
+        target.x = -7;
+        target.z = position.z - 3;
+    } else if (time >= 15 && time < 23) {
+        target.x = 7;
+        target.z = position.z - 3;
+    } else if (time >= 31 && time < 39) {
+        target.x = -7;
+        target.z = position.z - 3;
+    } else if (time >= 40 && time < 48) {
+        target.x = 7;
+        target.z = position.z - 3;
+    } else if (time >= 54 && time < 62) {
+        target.x = -7;
+        target.z = position.z - 3;
+    } else if (time >= 65) {
+        target.set(0, -4.8, -82);
+    }
+
+    return target;
+}
+
+function updateJourney(delta) {
+    if (!running) return;
+
+    const position = getCameraPosition(elapsed);
+    const target = getLookTarget(elapsed, position);
+
+    camera.position.lerp(position, Math.min(1, delta * 3.5));
+
+    const desiredDirection = target.clone().sub(camera.position);
+    const desiredQuaternion = new THREE.Quaternion().setFromUnitVectors(
+        new THREE.Vector3(0, 0, -1),
+        desiredDirection.normalize()
+    );
+
+    camera.quaternion.slerp(
+        desiredQuaternion,
+        Math.min(1, delta * 2.5)
+    );
+
+    progress.style.width = `${(elapsed / cakeTime) * 100}%`;
+
+    if (elapsed >= 64 && Math.random() < delta * 1.8) {
+        createFirework(
+            (Math.random() - 0.5) * 13,
+            Math.random() * 4,
+            -82 - Math.random() * 7
+        );
+    }
+
+    if (elapsed >= cakeTime) {
+        beginCakeSequence();
+    }
+}
+
+/* -------------------------------------------------------
+   AUDIO
+------------------------------------------------------- */
+
+function getAudioContext() {
+    if (!audioContext) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return null;
+        audioContext = new AudioContextClass();
+    }
+
+    if (audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
+
+    return audioContext;
+}
+
+function playTone(frequency, duration = 0.2, volume = 0.08) {
+    if (!soundEnabled) return;
+    const context = getAudioContext();
+    if (!context) return;
+
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+
+    oscillator.type = 'sine';
+    oscillator.frequency.value = frequency;
+
+    gain.gain.setValueAtTime(0.0001, context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(volume, context.currentTime + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration);
+
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+
+    oscillator.start();
+    oscillator.stop(context.currentTime + duration);
+}
+
+function playCrunch() {
+    if (!soundEnabled) return;
+    const context = getAudioContext();
+    if (!context) return;
+
+    const duration = 0.32;
+    const buffer = context.createBuffer(1, context.sampleRate * duration, context.sampleRate);
+    const channel = buffer.getChannelData(0);
+
+    for (let i = 0; i < channel.length; i++) {
+        channel[i] = (Math.random() * 2 - 1) * (1 - i / channel.length);
+    }
+
+    const source = context.createBufferSource();
+    const gain = context.createGain();
+    source.buffer = buffer;
+    gain.gain.setValueAtTime(0.0001, context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.035, context.currentTime + 0.025);
+    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration);
+    source.connect(gain);
+    gain.connect(context.destination);
+    source.start();
+}
+
+function startAmbientMusic() {
+    if (!soundEnabled || ambientTimer !== null) return;
+
+    const notes = [261.63, 329.63, 392, 329.63, 293.66, 349.23, 440, 349.23];
+    let noteIndex = 0;
+    ambientTimer = window.setInterval(() => {
+        playTone(notes[noteIndex % notes.length], 0.72, 0.018);
+        noteIndex += 1;
+    }, 850);
+}
+
+function stopAmbientMusic() {
+    if (ambientTimer === null) return;
+    window.clearInterval(ambientTimer);
+    ambientTimer = null;
+}
+
+function beginCakeSequence() {
+    if (cakeSequence) return;
+    running = false;
+    cakeSequence = {
+        time: 0,
+        cameraStart: camera.position.clone(),
+        cut: false,
+        attached: false,
+        fadeStarted: false
+    };
+    hud.classList.remove('visible');
+    hint.classList.remove('visible');
+    sceneCaption.textContent = 'A LITTLE SLICE OF HAPPINESS';
+    sceneCaption.classList.add('visible');
+}
+
+function cutCake() {
+    cakeBase.visible = false;
+    cakeTop.visible = false;
+    icing.visible = false;
+    cutCakeBase.visible = true;
+    cutCakeTop.visible = true;
+    sliceGroup.visible = true;
+    knifeGroup.visible = false;
+    flames.forEach(flame => { flame.visible = false; });
+    cakeCandles.forEach(candle => { candle.visible = false; });
+}
+
+function updateCakeSequence(delta) {
+    if (!cakeSequence) return;
+
+    const sequence = cakeSequence;
+    sequence.time += delta;
+    const time = sequence.time;
+    const approach = smoothStep(clamp(time / 1.7, 0, 1));
+
+    camera.position.lerpVectors(
+        sequence.cameraStart,
+        new THREE.Vector3(0, -4.35, -75.5),
+        approach
+    );
+    camera.lookAt(0, -5.8, -82);
+
+    if (time >= 1.7 && time < 2.8) {
+        knifeGroup.visible = true;
+        const cutProgress = smoothStep(clamp((time - 1.7) / 1.1, 0, 1));
+        knifeGroup.position.y = 3.2 - cutProgress * 1.7;
+        knifeGroup.rotation.z = -0.22 + cutProgress * 0.22;
+        if (!sequence.cutSoundPlayed) {
+            sequence.cutSoundPlayed = true;
+            playTone(740, 0.22, 0.035);
+            playTone(554.37, 0.35, 0.025);
+        }
+    }
+
+    if (time >= 2.8 && !sequence.cut) {
+        cutCake();
+        sequence.cut = true;
+    }
+
+    if (sequence.cut && time < 4.05) {
+        const sliceProgress = smoothStep(clamp((time - 2.8) / 1.25, 0, 1));
+        sliceGroup.position.set(sliceProgress * 2.1, sliceProgress * 0.25, sliceProgress * 1.45);
+        sliceGroup.rotation.y = -sliceProgress * 0.18;
+    }
+
+    if (time >= 4.05 && !sequence.attached) {
+        camera.attach(sliceGroup);
+        sliceGroup.position.set(0.4, -0.5, -1.75);
+        sliceGroup.rotation.set(0.05, 0.15, -0.08);
+        sliceGroup.scale.setScalar(0.38);
+        sequence.eatingStart = sliceGroup.position.clone();
+        sequence.attached = true;
+        sceneCaption.textContent = 'FIRST BITE';
+        playCrunch();
+    }
+
+    if (sequence.attached && time < 5.9) {
+        const eatingProgress = smoothStep(clamp((time - 4.05) / 1.75, 0, 1));
+        sliceGroup.position.lerpVectors(
+            sequence.eatingStart,
+            new THREE.Vector3(0.02, -0.04, -0.48),
+            eatingProgress
+        );
+        sliceGroup.scale.setScalar(0.38 * (1 - eatingProgress) + 0.001);
+        sliceGroup.rotation.z = -0.08 + eatingProgress * 0.22;
+        camera.position.x = Math.sin(time * 10) * 0.025 * (1 - eatingProgress);
+        if (time >= 4.85 && !sequence.secondBite) {
+            sequence.secondBite = true;
+            playCrunch();
+        }
+    }
+
+    if (time >= 5.9 && !sequence.fadeStarted) {
+        sequence.fadeStarted = true;
+        sceneCaption.classList.remove('visible');
+        sceneCaption.textContent = '';
+        darkness.classList.add('visible');
+        continueTimer = window.setTimeout(() => {
+            continuePrompt.style.display = 'flex';
+            requestAnimationFrame(() => continuePrompt.classList.add('visible'));
+        }, 4000);
+    }
+}
+
+/* -------------------------------------------------------
+   ANIMATION LOOP
+------------------------------------------------------- */
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    const delta = Math.min(clock.getDelta(), 0.04);
+    const time = clock.elapsedTime;
+
+    updateJourney(delta);
+    updateCakeSequence(delta);
+
+    // Gentle movement in the candle flames.
+    flames.forEach((flame, i) => {
+        flame.scale.y = 1.3 + Math.sin(time * 8 + i) * 0.25;
+        flame.rotation.z = Math.sin(time * 5 + i) * 0.12;
+    });
+
+    // Floating gift movement.
+    gifts.forEach((gift, i) => {
+        gift.group.rotation.y = Math.sin(time * 0.5 + i) * 0.025;
+    });
+
+    // Firework particle animation.
+    for (let i = fireworks.length - 1; i >= 0; i--) {
+        const firework = fireworks[i];
+        firework.life -= delta;
+
+        firework.group.children.forEach(particle => {
+            particle.position.addScaledVector(
+                particle.userData.velocity,
+                delta
+            );
+
+            particle.userData.velocity.y -= delta * 1.8;
+            particle.material.opacity = Math.max(0, firework.life / 1.6);
+            particle.material.transparent = true;
+        });
+
+        if (firework.life <= 0) {
+            scene.remove(firework.group);
+            firework.group.traverse(object => {
+                if (object.geometry) object.geometry.dispose();
+                if (object.material) object.material.dispose();
+            });
+            fireworks.splice(i, 1);
+        }
+    }
+
+    renderer.render(scene, camera);
+}
+
+animate();
+
+/* -------------------------------------------------------
+   EXPERIENCE CONTROLS
+------------------------------------------------------- */
+
+function startJourney() {
+    if (continueTimer !== null) {
+        window.clearTimeout(continueTimer);
+        continueTimer = null;
+    }
+
+    cakeSequence = null;
+    cakeGroup.add(sliceGroup);
+    sliceGroup.position.set(0, 0, 0);
+    sliceGroup.rotation.set(0, 0, 0);
+    sliceGroup.scale.setScalar(1);
+    sliceGroup.visible = false;
+    cakeBase.visible = true;
+    cakeTop.visible = true;
+    icing.visible = true;
+    cutCakeBase.visible = false;
+    cutCakeTop.visible = false;
+    knifeGroup.visible = false;
+    cakeCandles.forEach(candle => { candle.visible = true; });
+    flames.forEach(flame => { flame.visible = true; });
+    darkness.classList.remove('visible');
+    continuePrompt.classList.remove('visible');
+    continuePrompt.style.display = 'none';
+    sceneCaption.classList.remove('visible');
+    sceneCaption.textContent = '';
+    stopAmbientMusic();
+
+    elapsed = 0;
+    running = true;
+
+    camera.position.set(0, 0, 18);
+    camera.lookAt(0, 0, 0);
+
+    intro.style.opacity = '0';
+    ending.style.display = 'none';
+    ending.style.opacity = '0';
+
+    setTimeout(() => {
+        intro.style.display = 'none';
+        hud.classList.add('visible');
+        hint.classList.add('visible');
+    }, 900);
+
+    progress.style.width = '0%';
+    document.getElementById('pauseButton').textContent = 'PAUSE';
+    startAmbientMusic();
+}
+
+document.getElementById('startButton').addEventListener('click', () => {
+    soundEnabled = true;
+    document.getElementById('soundButton').textContent = 'SOUND: ON';
+    startJourney();
+    playTone(523.25, 0.25);
+});
+
+document.getElementById('pauseButton').addEventListener('click', event => {
+    running = !running;
+    event.currentTarget.textContent = running ? 'PAUSE' : 'RESUME';
+});
+
+document.getElementById('replayButton').addEventListener('click', () => {
+    startJourney();
+});
+
+document.getElementById('againButton').addEventListener('click', () => {
+    ending.style.opacity = '0';
+
+    setTimeout(() => {
+        startJourney();
+    }, 500);
+});
+
+document.getElementById('soundButton').addEventListener('click', event => {
+    soundEnabled = !soundEnabled;
+    event.currentTarget.textContent = soundEnabled ? 'SOUND: ON' : 'SOUND: OFF';
+
+    if (soundEnabled) {
+        startAmbientMusic();
+        playTone(659.25, 0.25);
+    } else {
+        stopAmbientMusic();
+    }
+});
+
+document.getElementById('continueButton').addEventListener('click', () => {
+    continuePrompt.classList.remove('visible');
+    continuePrompt.style.display = 'none';
+    ending.style.display = 'flex';
+    requestAnimationFrame(() => { ending.style.opacity = '1'; });
+    darkness.classList.remove('visible');
+});
+
+function moveThroughJourney(amount) {
+    if (!running) return;
+    elapsed = clamp(elapsed + amount, 0, cakeTime);
+    if (elapsed >= cakeTime) beginCakeSequence();
+}
+
+document.addEventListener('wheel', event => {
+    if (!running) return;
+    event.preventDefault();
+    moveThroughJourney(event.deltaY * 0.018);
+}, { passive: false });
+
+let lastTouchY = null;
+
+document.addEventListener('touchstart', event => {
+    if (event.touches.length === 1) lastTouchY = event.touches[0].clientY;
+}, { passive: true });
+
+document.addEventListener('touchmove', event => {
+    if (!running || event.touches.length !== 1 || lastTouchY === null) return;
+    event.preventDefault();
+    const touchY = event.touches[0].clientY;
+    moveThroughJourney((lastTouchY - touchY) * 0.035);
+    lastTouchY = touchY;
+}, { passive: false });
+
+document.addEventListener('touchend', () => { lastTouchY = null; });
+
+window.addEventListener('keydown', event => {
+    if (!running) return;
+    const step = event.shiftKey ? 3 : 1.5;
+
+    if (event.code === 'ArrowDown' || event.code === 'PageDown' || event.code === 'Space') {
+        event.preventDefault();
+        moveThroughJourney(step);
+    } else if (event.code === 'ArrowUp' || event.code === 'PageUp') {
+        event.preventDefault();
+        moveThroughJourney(-step);
+    }
+});
+
+/* -------------------------------------------------------
+   RESPONSIVE RESIZE
+------------------------------------------------------- */
+
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+});
+
+</script>
+</body>
+</html>
